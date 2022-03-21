@@ -1,45 +1,79 @@
-import { Layout, Menu } from 'antd';
-import { UploadOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import Container from '../Container';
+import { PageHeader, Tabs, Button, Statistic, Descriptions,Form, Skeleton } from 'antd';
+import React,{ useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-const { Header, Content, Footer, Sider } = Layout;
-
-ReactDOM.render(
-  <Layout>
-    <Sider
-      breakpoint="lg"
-      collapsedWidth="0"
-      onBreakpoint={broken => {
-        console.log(broken);
-      }}
-      onCollapse={(collapsed, type) => {
-        console.log(collapsed, type);
-      }}
-    >
-      <div className="logo" />
-      <Menu theme="dark" mode="inline" defaultSelectedKeys={['4']}>
-        <Menu.Item key="1" icon={<UserOutlined />}>
-          nav 1
-        </Menu.Item>
-        <Menu.Item key="2" icon={<VideoCameraOutlined />}>
-          nav 2
-        </Menu.Item>
-        <Menu.Item key="3" icon={<UploadOutlined />}>
-          nav 3
-        </Menu.Item>
-        <Menu.Item key="4" icon={<UserOutlined />}>
-          nav 4
-        </Menu.Item>
-      </Menu>
-    </Sider>
-    <Layout>
-      <Header className="site-layout-sub-header-background" style={{ padding: 0 }} />
-      <Content style={{ margin: '24px 16px 0' }}>
-        <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
-          content
-        </div>
-      </Content>
-      <Footer style={{ textAlign: 'center' }}>Ant Design ©2018 Created by Ant UED</Footer>
-    </Layout>
-  </Layout>,
-  mountNode,
+const renderContent = (props,column = 2) => (
+  <Descriptions size="small" column={column}>
+    <Descriptions.Item label="Company">{props.name}</Descriptions.Item>
+    <Descriptions.Item label="Owner">{props.owner}</Descriptions.Item>
+    <Descriptions.Item label="Website">{props.website}</Descriptions.Item>
+    <Descriptions.Item label="Email">{props.email}</Descriptions.Item>
+    <Descriptions.Item label="Address">{props.address}</Descriptions.Item>
+    <Descriptions.Item label="Phone">{props.phone_number}</Descriptions.Item>
+  </Descriptions>
 );
+
+const Content = ({ children, extra }) => (
+  <div className="content">
+    <div className="main">{children}</div>
+    <div className="extra">{extra}</div>
+  </div>
+);
+
+const State = (props)=>(
+  props.isLoading?
+    Skeleton:
+    props.component
+)
+
+const Company =(props)=>{
+  const [company,setCompany] = useState();
+  const [isError,setError] = useState(false);
+  const [isLoading,setLoading] = useState(true);
+  const navigate = useNavigate(false);
+  
+  useEffect(()=>{
+    axios.get("/manager/company")
+    .then((res)=>{
+      setCompany(res.data);
+      console.log(res.data)
+      setLoading(false)
+      return res;
+    })
+    .catch(e=>{
+      console.log(e);
+      setError(true);
+      navigate('/login');
+      return e;
+    });
+  },[]);
+
+return(
+  <Container>
+    {isLoading?
+      <Skeleton active/>:
+      <PageHeader
+        className="site-page-header-responsive"
+        title="Company Data"
+        subTitle={company.name}
+        extra={[
+          <Button key="3" onClick={()=>navigate('/edit')} type="primary">Edit</Button>
+        ]}
+      >
+        <Content>{renderContent(company)}</Content>
+      </PageHeader>
+    }
+      
+  </Container>
+)
+
+}
+
+
+export default Company;
+
+
+
+

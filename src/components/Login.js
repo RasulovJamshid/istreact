@@ -1,13 +1,26 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import 'antd/dist/antd.css';
-import '../index.css';
 import { Form, Input, Button, Checkbox, Layout } from 'antd';
 import { LockOutlined, InboxOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Login = (props) => {
+  const navigate = useNavigate();
   const onFinish = values => {
-    console.log('Received values of form: ', values);
+    let res = axios.post("/users/login",values)
+    .then(response=>{
+      if(response.data.hasOwnProperty('success') && response.data.success === true){
+      localStorage.setItem('user-token',response.data.token);
+      localStorage.setItem('user-role',response.data.role);
+      console.log(response.data.role);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+
+      navigate('/');
+      }
+      return response.data
+    })
+    .catch(err=>err);
+   
   };
 
   return (
@@ -53,7 +66,7 @@ const Login = () => {
         <Button type="primary" htmlType="submit" className="login-form-button">
           Log in
         </Button>
-        Or <a href="">register now!</a>
+        Or <Link to="/register">register now!</Link>
       </Form.Item>
     </Form>
     </Layout.Content>
